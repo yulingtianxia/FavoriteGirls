@@ -15,7 +15,7 @@ class DataSet(object):
                fake_data=False,
                one_hot=False,
                dtype=dtypes.float32,
-               reshape=True):
+               reshape=False):
     """Construct a DataSet.
     one_hot arg is used only if fake_data is true.  `dtype` can be either
     `uint8` to leave the input as `[0, 255]`, or `float32` to rescale into

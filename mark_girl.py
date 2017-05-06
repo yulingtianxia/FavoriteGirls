@@ -3,7 +3,8 @@ from PIL import Image
 import fetch_girl_images as fgi
 import os
 
-FILE_NAME = "training-image.tfrecord"
+FILE_NAME_TRAIN = "training-image.tfrecord"
+FILE_NAME_TEST = "testing-image.tfrecord"
 MARK_IMG_DIR = os.path.join(os.getcwd(), 'MarkImages/')
 
 
@@ -17,9 +18,17 @@ def mark_girl(img, mark):
     return example.SerializeToString()
 
 
-def load_mark_data():
-    filename_queue = tf.train.string_input_producer([FILE_NAME])
+def load_train_data():
+    filename_queue = tf.train.string_input_producer([FILE_NAME_TRAIN])
+    return load_mark_data(filename_queue)
 
+
+def load_test_data():
+    filename_queue = tf.train.string_input_producer([FILE_NAME_TEST])
+    return load_mark_data(filename_queue)
+
+
+def load_mark_data(filename_queue):
     reader = tf.TFRecordReader()
     _, serialized_example = reader.read(filename_queue)
     features = tf.parse_single_example(serialized_example,
@@ -27,7 +36,6 @@ def load_mark_data():
                                            'label': tf.FixedLenFeature([], tf.int64),
                                            'img_raw': tf.FixedLenFeature([], tf.string),
                                        })
-
     image = tf.decode_raw(features['img_raw'], tf.uint8)
     size = fgi.TARGET_SIZE
     image = tf.reshape(image, [size[0], size[1], 3])

@@ -11,7 +11,8 @@ import csv
 import girl
 
 GIRL_URL = "https://meizi.leanapp.cn/category/All/page/"
-IMG_DIR = os.path.join(os.getcwd(), 'Images/')
+IMG_TRAIN_DIR = os.path.join(os.getcwd(), 'ImagesTrain/')
+IMG_TEST_DIR = os.path.join(os.getcwd(), 'ImagesTest/')
 TARGET_SIZE = (100, 100)
 GIRL_MARK_FILE = "girl_img_mark.csv"
 
@@ -25,11 +26,11 @@ def download_girl_images(pagerange):
             download_girl_image(image_url)
 
 
-def download_girl_image(image_url):
+def download_girl_image(image_url, des_dir):
     image_name = image_url.split('/')[-1]
     f = urllib2.urlopen(image_url)
     data = f.read()
-    s = IMG_DIR + image_name
+    s = des_dir + image_name
     with open(s, "w") as girl:
         girl.write(data)
     return s
@@ -50,25 +51,57 @@ def process_image(image_filename):
     return img
 
 
-def load_dataset():
+def download_proprocess_dataset():
     csvfile = open(GIRL_MARK_FILE, "r")
     reader = csv.reader(csvfile)
-    data_arr = []
-    for item in reader:
-        image_filename = download_girl_image(item[0])
-        if imghdr.what(image_filename) is not None:
-            img = process_image(image_filename)
-            data_arr.append(mg.mark_girl(img, int(item[1])))
-    writer = tf.python_io.TFRecordWriter(mg.FILE_NAME)
-    for data in data_arr:
+    train_data_arr = []
+    test_data_arr = []
+    for index, item in enumerate(reader):
+        if index % 5 == 0:
+            image_filename = download_girl_image(item[0], IMG_TEST_DIR)
+            if imghdr.what(image_filename) is not None:
+                img = process_image(image_filename)
+                test_data_arr.append(mg.mark_girl(img, int(item[1])))
+        else:
+            image_filename = download_girl_image(item[0], IMG_TRAIN_DIR)
+            if imghdr.what(image_filename) is not None:
+                img = process_image(image_filename)
+                train_data_arr.append(mg.mark_girl(img, int(item[1])))
+    writer = tf.python_io.TFRecordWriter(mg.FILE_NAME_TEST)
+    for data in test_data_arr:
         writer.write(data)
     writer.close()
-    image_full, label_full = mg.load_mark_data()
-    len_full = len(label_full)
-    len_train = tf.cast(tf.ceil(len_full * 0.8), tf.int32)
-    len_test = len_full - len_train
-    image_train, image_test = tf.split(image_full, [len_train, len_test], 0)
-    label_train, label_test = tf.split(label_full, [len_train, len_test], 0)
-    train = girl.DataSet(image_train, label_train)
-    test = girl.DataSet(image_test, label_test)
+    writer = tf.python_io.TFRecordWriter(mg.FILE_NAME_TRAIN)
+    for data in train_data_arr:
+        writer.write(data)
+    writer.close()
+
+
+def load_dataset(train_len=320, test_len=80):
+    image_train, label_train = mg.load_train_data()
+    image_test, label_test = mg.load_test_data()
+
+    image_train_full = []
+    label_train_full = []
+    image_test_full = []
+    label_test_full = []
+
+    with tf.Session() as sess:
+        init_op = tf.initialize_all_variables()
+        sess.run(init_op)
+        coord = tf.train.Coordinator()
+        threads = tf.train.start_queue_runners(coord=coord)
+        for i in range(train_len):
+            x_train, y_train = sess.run([image_train, label_train])
+            image_train_full.append(x_train)
+            label_train_full.append(y_train)
+        for i in range(test_len):
+            x_test, y_test = sess.run([image_test, label_test])
+            image_test_full.append(x_test)
+            label_test_full.append(y_test)
+        coord.request_stop()
+        coord.join(threads)
+
+    train = girl.DataSet(np.array(image_train_full), np.array(label_train_full))
+    test = girl.DataSet(np.array(image_test_full), np.array(label_test_full))
     return train, test

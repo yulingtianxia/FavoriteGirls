@@ -59,7 +59,8 @@ def cnn_model_fn(features, labels, mode):
   # Flatten tensor into a batch of vectors
   # Input Tensor Shape: [batch_size, 7, 7, 64]
   # Output Tensor Shape: [batch_size, 7 * 7 * 64]
-  pool2_flat = tf.reshape(pool2, [-1, fgi.TARGET_SIZE[0] / 2 * fgi.TARGET_SIZE[1] / 2 * 64])
+
+  pool2_flat = tf.reshape(pool2, [-1, int(fgi.TARGET_SIZE[0] / 4) * int(fgi.TARGET_SIZE[1] / 4) * 64])
 
   # Dense Layer
   # Densely connected layer with 1024 neurons
@@ -108,7 +109,12 @@ def cnn_model_fn(features, labels, mode):
 
 def main(unused_argv):
   # Load training and eval data
-  girl_train, girl_test = fgi.load_dataset()
+
+  # fgi.download_proprocess_dataset()
+  data_len = 401
+  train_len = np.cast(np.ceil(data_len * 0.8), np.int32)
+  test_len = data_len - train_len
+  girl_train, girl_test = fgi.load_dataset(train_len, test_len)
   train_data = girl_train.images  # Returns np.array
   train_labels = np.asarray(girl_train.labels, dtype=np.int32)
   eval_data = girl_test.images  # Returns np.array
@@ -128,8 +134,8 @@ def main(unused_argv):
   girl_classifier.fit(
       x=train_data,
       y=train_labels,
-      batch_size=10,
-      steps=400,
+      batch_size=100,
+      steps=20000,
       monitors=[logging_hook])
 
   # Configure the accuracy metric for evaluation

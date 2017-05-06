@@ -90,5 +90,6 @@ ENV/
 
 # Images
 
-Images/
+ImagesTrain/
+ImagesTest/
 MarkImages/
