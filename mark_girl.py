@@ -17,7 +17,7 @@ def mark_girl(img, mark):
     return example.SerializeToString()
 
 
-def load_mark_data(num=1):
+def load_mark_data():
     filename_queue = tf.train.string_input_producer([FILE_NAME])
 
     reader = tf.TFRecordReader()
@@ -32,16 +32,5 @@ def load_mark_data(num=1):
     size = fgi.TARGET_SIZE
     image = tf.reshape(image, [size[0], size[1], 3])
     label = tf.cast(features['label'], tf.int32)
-    with tf.Session() as sess:
-        init_op = tf.global_variables_initializer()
-        sess.run(init_op)
-        coord = tf.train.Coordinator()
-        threads = tf.train.start_queue_runners(coord=coord)
-        for i in range(num):
-            example, l = sess.run([image, label])
-            img = Image.fromarray(example, 'RGB')
-            img.save(MARK_IMG_DIR + str(i) + '_''Label_' + str(l) + '.jpg')
-        coord.request_stop()
-        coord.join(threads)
     return image, label
 

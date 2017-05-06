@@ -108,15 +108,15 @@ def cnn_model_fn(features, labels, mode):
 
 def main(unused_argv):
   # Load training and eval data
-  mnist = learn.datasets.load_dataset("mnist")
-  train_data = mnist.train.images  # Returns np.array
-  train_labels = np.asarray(mnist.train.labels, dtype=np.int32)
-  eval_data = mnist.test.images  # Returns np.array
-  eval_labels = np.asarray(mnist.test.labels, dtype=np.int32)
+  girl_train, girl_test = fgi.load_dataset()
+  train_data = girl_train.images  # Returns np.array
+  train_labels = np.asarray(girl_train.labels, dtype=np.int32)
+  eval_data = girl_test.images  # Returns np.array
+  eval_labels = np.asarray(girl_test.labels, dtype=np.int32)
 
   # Create the Estimator
-  mnist_classifier = learn.Estimator(
-      model_fn=cnn_model_fn, model_dir="/tmp/mnist_convnet_model")
+  girl_classifier = learn.Estimator(
+      model_fn=cnn_model_fn, model_dir="/tmp/girlmark_convnet_model")
 
   # Set up logging for predictions
   # Log the values in the "Softmax" tensor with label "probabilities"
@@ -125,11 +125,11 @@ def main(unused_argv):
       tensors=tensors_to_log, every_n_iter=50)
 
   # Train the model
-  mnist_classifier.fit(
+  girl_classifier.fit(
       x=train_data,
       y=train_labels,
-      batch_size=100,
-      steps=20000,
+      batch_size=10,
+      steps=400,
       monitors=[logging_hook])
 
   # Configure the accuracy metric for evaluation
@@ -140,7 +140,7 @@ def main(unused_argv):
   }
 
   # Evaluate the model and print results
-  eval_results = mnist_classifier.evaluate(
+  eval_results = girl_classifier.evaluate(
       x=eval_data, y=eval_labels, metrics=metrics)
   print(eval_results)
 

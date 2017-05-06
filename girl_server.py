@@ -25,11 +25,11 @@ while True:
     print(image)
     print(mark)
     girl_mark_dic[image] = mark
-    csvFile = open(fgi.GIRL_MARK_FILE, "w")
-    writer = csv.writer(csvFile)
+    csvfile = open(fgi.GIRL_MARK_FILE, "w")
+    writer = csv.writer(csvfile)
     for k, v in girl_mark_dic.iteritems():
         writer.writerow([k, v])
-    csvFile.close()
+    csvfile.close()
 
     http_response = """
 HTTP/1.1 200 OK

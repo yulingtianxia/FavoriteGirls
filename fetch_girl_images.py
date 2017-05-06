@@ -8,6 +8,7 @@ from PIL import Image
 import imghdr
 import mark_girl as mg
 import csv
+import girl
 
 GIRL_URL = "https://meizi.leanapp.cn/category/All/page/"
 IMG_DIR = os.path.join(os.getcwd(), 'Images/')
@@ -38,8 +39,8 @@ def process_image(image_filename):
     img = Image.open(image_filename)
     width, height = img.size
     side = min([width, height])
-    left = (width-side)/2
-    upper = (height-side)/2
+    left = (width - side) / 2
+    upper = (height - side) / 2
     right = left + side
     bottom = upper + side
     area = (left, upper, right, bottom)
@@ -49,9 +50,9 @@ def process_image(image_filename):
     return img
 
 
-if __name__ == '__main__':
-    csvFile = open(GIRL_MARK_FILE, "r")
-    reader = csv.reader(csvFile)
+def load_dataset():
+    csvfile = open(GIRL_MARK_FILE, "r")
+    reader = csv.reader(csvfile)
     data_arr = []
     for item in reader:
         image_filename = download_girl_image(item[0])
@@ -62,4 +63,12 @@ if __name__ == '__main__':
     for data in data_arr:
         writer.write(data)
     writer.close()
-    X_img, y_label = mg.load_mark_data(len(data_arr))
+    image_full, label_full = mg.load_mark_data()
+    len_full = len(label_full)
+    len_train = tf.cast(tf.ceil(len_full * 0.8), tf.int32)
+    len_test = len_full - len_train
+    image_train, image_test = tf.split(image_full, [len_train, len_test], 0)
+    label_train, label_test = tf.split(label_full, [len_train, len_test], 0)
+    train = girl.DataSet(image_train, label_train)
+    test = girl.DataSet(image_test, label_test)
+    return train, test
