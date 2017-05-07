@@ -13,13 +13,13 @@ import girl
 GIRL_URL = "https://meizi.leanapp.cn/category/All/page/"
 IMG_TRAIN_DIR = os.path.join(os.getcwd(), 'ImagesTrain/')
 IMG_TEST_DIR = os.path.join(os.getcwd(), 'ImagesTest/')
-TARGET_SIZE = (100, 100)
+TARGET_SIZE = (128, 128)
 GIRL_MARK_FILE = "girl_img_mark.csv"
 
 
 def download_girl_images(pagerange):
     for page in pagerange:
-        data = json.load(urllib.urlopen(GIRL_URL + str(page)))
+        data = json.load(urllib.request.urlopen(GIRL_URL + str(page)))
         results = data['results']
         for girl in results:
             image_url = girl['image_url']
@@ -28,10 +28,10 @@ def download_girl_images(pagerange):
 
 def download_girl_image(image_url, des_dir):
     image_name = image_url.split('/')[-1]
-    f = urllib.urlopen(image_url)
+    f = urllib.request.urlopen(image_url)
     data = f.read()
     s = des_dir + image_name
-    with open(s, "w") as girl:
+    with open(s, "wb") as girl:
         girl.write(data)
     return s
 

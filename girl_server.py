@@ -27,9 +27,9 @@ while True:
      request_version
      ) = request_line.split()
     (image, mark) = path.lstrip('/').split('?')
-    print(image)
-    print(mark)
+
     girl_mark_dic[image] = mark
+    print('No.' + str(len(girl_mark_dic)) + ' image:' + image + ' mark:' + str(mark))
     csvfile = open(fgi.GIRL_MARK_FILE, "w")
     writer = csv.writer(csvfile)
     for k, v in girl_mark_dic.iteritems():
