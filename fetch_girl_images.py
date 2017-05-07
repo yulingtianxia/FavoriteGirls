@@ -13,7 +13,7 @@ import girl
 GIRL_URL = "https://meizi.leanapp.cn/category/All/page/"
 IMG_TRAIN_DIR = os.path.join(os.getcwd(), 'ImagesTrain/')
 IMG_TEST_DIR = os.path.join(os.getcwd(), 'ImagesTest/')
-TARGET_SIZE = (100, 100)
+TARGET_SIZE = (128, 128)
 GIRL_MARK_FILE = "girl_img_mark.csv"
 
 

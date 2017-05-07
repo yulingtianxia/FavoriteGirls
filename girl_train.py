@@ -28,7 +28,7 @@ def cnn_model_fn(features, labels, mode):
   conv1 = tf.layers.conv2d(
       inputs=input_layer,
       filters=32,
-      kernel_size=[5, 5],
+      kernel_size=[10, 10],
       padding="same",
       activation=tf.nn.relu)
 
@@ -46,7 +46,7 @@ def cnn_model_fn(features, labels, mode):
   conv2 = tf.layers.conv2d(
       inputs=pool1,
       filters=64,
-      kernel_size=[5, 5],
+      kernel_size=[10, 10],
       padding="same",
       activation=tf.nn.relu)
 
@@ -56,21 +56,29 @@ def cnn_model_fn(features, labels, mode):
   # Output Tensor Shape: [batch_size, 7, 7, 64]
   pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], strides=2)
 
+  conv3 = tf.layers.conv2d(
+      inputs=pool2,
+      filters=128,
+      kernel_size=[10, 10],
+      padding="same",
+      activation=tf.nn.relu)
+  pool3 = tf.layers.max_pooling2d(inputs=conv3, pool_size=[2, 2], strides=2)
+
   # Flatten tensor into a batch of vectors
   # Input Tensor Shape: [batch_size, 7, 7, 64]
   # Output Tensor Shape: [batch_size, 7 * 7 * 64]
 
-  pool2_flat = tf.reshape(pool2, [-1, int(fgi.TARGET_SIZE[0] / 4) * int(fgi.TARGET_SIZE[1] / 4) * 64])
+  pool3_flat = tf.reshape(pool3, [-1, int(fgi.TARGET_SIZE[0] / 8) * int(fgi.TARGET_SIZE[1] / 8) * 128])
 
   # Dense Layer
   # Densely connected layer with 1024 neurons
   # Input Tensor Shape: [batch_size, 7 * 7 * 64]
   # Output Tensor Shape: [batch_size, 1024]
-  dense = tf.layers.dense(inputs=pool2_flat, units=1024, activation=tf.nn.relu)
+  dense = tf.layers.dense(inputs=pool3_flat, units=1024, activation=tf.nn.relu)
 
   # Add dropout operation; 0.6 probability that element will be kept
   dropout = tf.layers.dropout(
-      inputs=dense, rate=0.4, training=mode == learn.ModeKeys.TRAIN)
+      inputs=dense, rate=0.3, training=mode == learn.ModeKeys.TRAIN)
 
   # Logits layer
   # Input Tensor Shape: [batch_size, 1024]
@@ -110,9 +118,9 @@ def cnn_model_fn(features, labels, mode):
 def main(unused_argv):
   # Load training and eval data
 
-  # fgi.download_proprocess_dataset()
-  data_len = 401
-  train_len = np.cast(np.ceil(data_len * 0.8), np.int32)
+  fgi.download_proprocess_dataset()
+  data_len = 4010
+  train_len = int(data_len * 0.8)
   test_len = data_len - train_len
   girl_train, girl_test = fgi.load_dataset(train_len, test_len)
   train_data = girl_train.images  # Returns np.array
@@ -135,7 +143,7 @@ def main(unused_argv):
       x=train_data,
       y=train_labels,
       batch_size=100,
-      steps=20000,
+      steps=5000,
       monitors=[logging_hook])
 
   # Configure the accuracy metric for evaluation
