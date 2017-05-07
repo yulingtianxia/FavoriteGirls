@@ -10,6 +10,11 @@ listen_socket.bind((HOST, PORT))
 listen_socket.listen(1)
 girl_mark_dic = {}
 
+csvfile = open(fgi.GIRL_MARK_FILE, "r")
+reader = csv.reader(csvfile)
+for item in reader:
+    girl_mark_dic[item[0]] = item[1]
+
 print 'Serving HTTP on port %s ...' % PORT
 while True:
     client_connection, client_address = listen_socket.accept()
