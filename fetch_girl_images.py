@@ -1,5 +1,5 @@
 from __future__ import print_function
-import urllib2
+import urllib
 import json
 import tensorflow as tf
 import os
@@ -19,7 +19,7 @@ GIRL_MARK_FILE = "girl_img_mark.csv"
 
 def download_girl_images(pagerange):
     for page in pagerange:
-        data = json.load(urllib2.urlopen(GIRL_URL + str(page)))
+        data = json.load(urllib.urlopen(GIRL_URL + str(page)))
         results = data['results']
         for girl in results:
             image_url = girl['image_url']
@@ -28,7 +28,7 @@ def download_girl_images(pagerange):
 
 def download_girl_image(image_url, des_dir):
     image_name = image_url.split('/')[-1]
-    f = urllib2.urlopen(image_url)
+    f = urllib.urlopen(image_url)
     data = f.read()
     s = des_dir + image_name
     with open(s, "w") as girl:
